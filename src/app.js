@@ -112,6 +112,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         popupText.textContent = "Redirecting...";
                     }
 
+                    setTimeout(function () {
+                        window.location.href = "./v/?id=" + result.id;
+                    }, 700);
 
                 } catch (e) {
                     hidePopup();
@@ -143,52 +146,6 @@ document.addEventListener("DOMContentLoaded", function () {
         errorBox.style.display = "block";
     }
 });
-
-function showResult(url) {
-    // buat element kalau belum ada
-    let box = document.getElementById("resultBox");
-
-    if (!box) {
-        box = document.createElement("div");
-        box.id = "resultBox";
-        box.style.textAlign = "center";
-        box.style.marginTop = "20px";
-
-        box.innerHTML = `
-            <input id="resultUrl" readonly 
-                style="width:80%;padding:10px;border-radius:8px;border:1px solid #ccc;">
-            <br><br>
-            <button id="copyBtn" style="
-                padding:10px 20px;
-                border:none;
-                border-radius:8px;
-                background:#4CAF50;
-                color:#fff;
-                cursor:pointer;
-                font-weight:600;">
-                Copy URL
-            </button>
-            <div id="copyNotif" style="margin-top:10px;color:green;display:none;">
-                Copied!
-            </div>
-        `;
-
-        document.body.appendChild(box);
-
-        document.getElementById("copyBtn").onclick = function () {
-            const input = document.getElementById("resultUrl");
-            const notif = document.getElementById("copyNotif");
-
-            navigator.clipboard.writeText(input.value).then(() => {
-                notif.style.display = "block";
-                setTimeout(() => notif.style.display = "none", 2000);
-            });
-        };
-    }
-
-    document.getElementById("resultUrl").value = url;
-    box.style.display = "block";
-}
 
 window.openTerms = function () {
     const modal = document.getElementById("pageModal");
