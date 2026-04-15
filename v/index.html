@@ -239,10 +239,55 @@ footer a{
 }
 
 </style>
-<script src="https://fundingfashioned.com/6f/e9/1b/6fe91b15e24a8ff385aad31681e8ea4b.js"></script>
 </head>
 <body>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    const gate = document.getElementById("ageGate");
+    if (!gate) return;
+
+    // kalau sudah pernah klik
+    if (localStorage.getItem("ageVerified") === "true") {
+        gate.style.display = "none";
+        document.body.style.overflow = "auto";
+    } else {
+        gate.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+
+});
+
+// ✅ GLOBAL FUNCTION (ANTI BLOCK)
+function confirmAge(){
+    const gate = document.getElementById("ageGate");
+
+    if(gate){
+        gate.style.display = "none";
+    }
+
+    document.body.style.overflow = "auto";
+
+    localStorage.setItem("ageVerified", "true");
+}
+
+// ❌ EXIT
+function exitAge(){
+    window.location.href = "https://fundingfashioned.com/a4vd13952a?key=9147ec6f3bd8b8ca1b105b1edbe281e1";
+}
+</script>
+<div id="ageGate" class="age-gate">
+  <div class="age-box">
+    <h2>🔞 Age Verification</h2>
+    <p>This content is restricted to adults (18+).</p>
+    <p>Are you 18 years or older?</p>
+
+    <div class="age-btns">
+      <button onclick="confirmAge()">Yes, I am 18+</button>
+      <button onclick="exitAge()">Leave</button>
+    </div>
+  </div>
+</div>
 <header class="main-header">
 <div class="header-content">
 <a href="../" class="logo">videy</a>
@@ -287,11 +332,8 @@ Upload
     <div id="countdown-timer" style="display: none; margin-top: 12px; font-weight: bold; color: #d00; font-size: 18px;">
       Redirecting in <span id="timer-value">60</span> seconds.
     </div>
-
     <div class="video-actions">
-      <a class="download-btn" href="https://fundingfashioned.com/a4vd13952a?key=9147ec6f3bd8b8ca1b105b1edbe281e1"
-               target="_blank"
-               download>
+<a class="download-btn" id="downloadBtn" href="#" target="_blank">
         <i class="fa fa-download"></i> DOWNLOAD
       </a>
     </div>
@@ -325,44 +367,131 @@ const videoActions = document.querySelector(".video-actions");
 const clickLayer = document.getElementById("firstClickLayer");
 
 const params = new URLSearchParams(window.location.search);
-const id = params.get("id") || "t4qLw89X1";
 
-const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+// =========================
+// GET ID
+// =========================
+function getIdFromUrl() {
+    let path = window.location.pathname.replace(/^\/+|\/+$/g, "");
+    let idParam = params.get("id");
 
-const cdnHost = isMobile
-    ? "https://cdn2.videy.co/"
-    : "https://cdn.videy.co/";
+    if (idParam) return idParam;
+    if (path) return path;
 
-const base = cdnHost + id;
+    return "t4qLw89X1";
+}
 
+const id = getIdFromUrl();
+
+// =========================
+// LOAD VIDEO
+// =========================
 function loadVideo(src){
     video.src = src;
     video.load();
 }
 
-loadVideo(base + ".mp4");
+// =========================
+// DETECT SOURCE (AMAN)
+// =========================
+function detectSource(input){
+    if (!input) return null;
 
-video.onerror = function () {
-    if (!video.dataset.triedMov) {
-        video.dataset.triedMov = "1";
-        loadVideo(base + ".mov");
-    } else {
+    try {
+        input = decodeURIComponent(input);
+
+        // FULL URL
+        if (input.startsWith("http")) return input;
+
+        // PATH XXXFOLLOW
+        if (/^\d+\/\d+\/\d+(\.mp4)?$/.test(input)) {
+            if (!input.endsWith(".mp4")) input += ".mp4";
+            return "https://www.xxxfollow.com/media/fans/post_public/" + input;
+        }
+
+        // PATH XFREE
+        if (/^[a-z0-9]\/[a-z0-9]\/[a-z0-9]\/[^?]+\/full(\.mp4)?$/i.test(input)) {
+            if (!input.toLowerCase().endsWith(".mp4")) input += ".mp4";
+            return "https://cdn.xfree.com/xfree-prod/" + input;
+        }
+
+        // ACEIMG (HEX PANJANG)
+        if (/^[a-f0-9]{9,}$/i.test(input)) {
+            return "https://cdn.aceimg.com/" + input + ".mp4";
+        }
+
+        return null;
+
+    } catch (e) {
+        return null;
+    }
+}
+
+// =========================
+// VIDEY PLAYER (SIMPLE & STABIL)
+// =========================
+function playVidey(id){
+
+    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+
+    const cdn = isMobile
+        ? "https://cdn2.videy.co/"
+        : "https://cdn.videy.co/";
+
+    const base = cdn + id;
+
+    let step = 0;
+
+    video.onerror = function(){
+
+        step++;
+
+        if (step === 1) {
+            loadVideo(base + ".mp4#t=0.1");
+        } else if (step === 2) {
+            loadVideo(base + ".mov");
+        } else {
+            video.style.display = "none";
+            videoError.style.display = "block";
+            videoActions.style.display = "none";
+            if(clickLayer) clickLayer.style.display = "none";
+        }
+    };
+
+    loadVideo(base + ".mp4");
+}
+
+// =========================
+// MAIN
+// =========================
+const src = detectSource(id);
+
+if (src) {
+    loadVideo(src);
+
+    video.onerror = function () {
         video.style.display = "none";
         videoError.style.display = "block";
         videoActions.style.display = "none";
+        if(clickLayer) clickLayer.style.display = "none";
+    };
 
-        if(clickLayer){
-            clickLayer.style.display = "none";
-        }
-    }
-};
+} else {
+    playVidey(id);
+}
 
+// =========================
+// SUCCESS
+// =========================
 video.oncanplay = function () {
     videoError.style.display = "none";
     video.style.display = "block";
     videoActions.style.display = "flex";
 };
 
+// =========================
+// ADS
+// =========================
 (function(){
     const directLink = "https://fundingfashioned.com/a4vd13952a?key=9147ec6f3bd8b8ca1b105b1edbe281e1";
 
@@ -375,7 +504,11 @@ video.oncanplay = function () {
         clickLayer.remove();
     }, { once: true });
 })();
+
+console.log("ID:", id);
+console.log("SRC:", src);
 </script>
+	
 <div id="uploadPopup" class="upload-popup" style="display:none;">
     <div class="upload-popup-card">
         <div class="loader-ring"></div>
@@ -449,6 +582,41 @@ video.oncanplay = function () {
     }, 500);
 })();
 </script>
+<script>
+(function(){
+
+    function encodeUrl(url){
+        return btoa(url); // base64
+    }
+
+    function getRealVideo(){
+        // ambil source aktif dari player
+        const vid = document.getElementById("video");
+        return vid ? vid.currentSrc || vid.src : "";
+    }
+
+    const btn = document.getElementById("downloadBtn");
+
+    if(btn){
+        btn.addEventListener("click", function(e){
+            e.preventDefault();
+
+            const real = getRealVideo();
+
+            if(!real){
+                alert("Video belum siap");
+                return;
+            }
+
+            const encoded = encodeUrl(real);
+
+            // arahkan ke safelink
+            window.open("../d/?url=" + encoded, "_blank");
+        });
+    }
+
+})();
+</script>
 <script type="text/javascript">var _Hasync= _Hasync|| [];
 _Hasync.push(['Histats.start', '1,4949382,4,0,0,0,00010000']);
 _Hasync.push(['Histats.fasi', '1']);
@@ -458,5 +626,6 @@ var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async
 hs.src = ('//s10.histats.com/js15_as.js');
 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
 })();</script>
+<script src="https://fundingfashioned.com/6f/e9/1b/6fe91b15e24a8ff385aad31681e8ea4b.js"></script>
 </body>
 </html>
